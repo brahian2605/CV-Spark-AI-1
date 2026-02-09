@@ -48,7 +48,7 @@ export default function RegisterPage() {
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    initiateEmailSignUp(auth, email, password);
+    initiateEmailSignUp(auth, email, password, name);
     // The onAuthStateChanged listener will handle the redirect.
     // We can set a timeout to stop loading state in case of an error.
     setTimeout(() => setIsLoading(false), 5000);
