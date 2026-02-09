@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A person working on a CV on their laptop.",
+      "imageUrl": "https://images.unsplash.com/photo-1535957998253-26ae1ef29506?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkZXNrJTIwbGFwdG9wfGVufDB8fHx8MTc3MDQ5NDkxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "desk laptop"
+    },
+    {
+      "id": "template-feature",
+      "description": "Collage of different CV templates.",
+      "imageUrl": "https://images.unsplash.com/photo-1644030691460-5b7f81f111c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkb2N1bWVudHMlMjBkZXNpZ258ZW58MHx8fHwxNzcwNTk2Mzk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "documents design"
+    },
+    {
+      "id": "ai-feature",
+      "description": "Abstract representation of artificial intelligence.",
+      "imageUrl": "https://images.unsplash.com/photo-1675334758735-5f989ff8237f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzcwNTA1ODI3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract technology"
+    },
+    {
+      "id": "pdf-feature",
+      "description": "An icon representing a PDF document.",
+      "imageUrl": "https://images.unsplash.com/photo-1663124178703-d2d6a333e6c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N1bWVudCUyMGljb258ZW58MHx8fHwxNzcwNTMzMzA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "document icon"
+    },
+    {
+      "id": "cv-preview-1",
+      "description": "Preview of a CV.",
+      "imageUrl": "https://images.unsplash.com/photo-1764380750381-35062b6de96d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cmVzdW1lJTIwZG9jdW1lbnR8ZW58MHx8fHwxNzcwNTk1Njk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "resume document"
+    },
+    {
+      "id": "cv-preview-2",
+      "description": "Preview of another CV.",
+      "imageUrl": "https://images.unsplash.com/photo-1621944190272-ec775aad58d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjdiUyMHBhcGVyfGVufDB8fHx8MTc3MDU5NjM5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cv paper"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Default user avatar.",
+      "imageUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzA1ODUyMzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    }
+  ]
 }
