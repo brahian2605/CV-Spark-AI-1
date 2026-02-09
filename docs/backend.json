@@ -1,0 +1,170 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CV Spark AI application.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "name",
+        "email",
+        "createdAt"
+      ]
+    },
+    "Cv": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Cv",
+      "type": "object",
+      "description": "Represents a Curriculum Vitae (CV) created by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CV entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Cv)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the CV."
+        },
+        "personalInfo": {
+          "type": "string",
+          "description": "User's personal information as a string."
+        },
+        "experience": {
+          "type": "array",
+          "description": "Array of work experience entries.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "education": {
+          "type": "array",
+          "description": "Array of education entries.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skills": {
+          "type": "array",
+          "description": "Array of skills.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "languages": {
+          "type": "array",
+          "description": "Array of languages.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "projects": {
+          "type": "array",
+          "description": "Array of project descriptions.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "template": {
+          "type": "string",
+          "description": "The template used for the CV."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the CV was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the CV was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "personalInfo",
+        "experience",
+        "education",
+        "skills",
+        "languages",
+        "projects",
+        "template",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Accessible only to the authenticated user with matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/cvs/{cvId}",
+        "definition": {
+          "entityName": "Cv",
+          "schema": {
+            "$ref": "#/backend/entities/Cv"
+          },
+          "description": "Stores CV documents owned by the user. Path-based ownership simplifies security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the CV."
+            },
+            {
+              "name": "cvId",
+              "description": "The unique identifier of the CV."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure secure access and efficient data management for the CV Spark AI application. The structure prioritizes authorization independence by avoiding hierarchical authorization dependencies. User data and CV data are stored in separate collections with clear ownership enforced through path-based rules. The design implements structural segregation by ensuring each collection contains documents with a homogeneous security posture.\n\nThe `/users/{userId}` collection stores user profiles, accessible only to the authenticated user with a matching `userId`. The `/users/{userId}/cvs/{cvId}` subcollection stores CV documents owned by the user. The `cvs` subcollection benefits from a path-based ownership model (`/users/{userId}/cvs/{cvId}`), making security rules straightforward and efficient.\n\nThis structure allows for simple and robust security rules, ensuring that users can only access their own data. It also supports secure list operations, as each user's CVs are stored under their own document, avoiding the need to filter data based on user ID during listing."
+  }
+}

@@ -1,0 +1,106 @@
+/**
+ * This ruleset enforces a strict user-ownership model for the CV Spark AI application.
+ * All user-generated content, including profiles and CVs, is secured to ensure
+ * that only the authenticated owner of the data can access or modify it.
+ *
+ * Core Philosophy:
+ * The security model is built on the principle of least privilege. By default, all
+ * access is denied. Rules explicitly grant permissions only to the authenticated
+ * owner of a specific data resource.
+ *
+ * Data Structure:
+ * The data is organized hierarchically to simplify security. Each user's data is
+ * stored under a unique path:
+ * - /users/{userId}: Stores the user's public profile.
+ * - /users/{userId}/cvs/{cvId}: A subcollection containing all CVs created by that user.
+ * This path-based ownership makes rules simple, performant, and easy to audit.
+ *
+ * Key Security Decisions:
+ * - User Listing Disabled: It is not possible to list all users in the `/users` collection.
+ *   This is a critical privacy feature to prevent scraping of user data.
+ * - Strict Ownership: All operations (read, write, delete) on a user's data tree
+ *   (their profile and their CVs) are restricted to the user whose UID matches the
+ *   `{userId}` in the path.
+ * - Relational Integrity: On document creation, the rules validate that the owner ID
+ *   field within the document's data (e.g., `User.uid`, `Cv.userId`) matches the
+ *   `{userId}` from the path. This field is enforced as immutable on updates to
+ *   prevent documents from being "re-assigned" to another user.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions to promote readable, reusable, and maintainable rules.
+
+    /**
+     * Checks if the current request is from an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently signed-in user's UID matches the provided userId.
+     * This is the primary function for establishing document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for ownership on an existing document. Used for update and delete
+     * operations to prevent acting on documents that don't exist.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description   Secures a user's profile document.
+     * @path          /users/{userId}
+     * @allow         (create) An authenticated user can create their own profile document.
+     * @allow         (get, update, delete) The owner of the profile can read, update, or delete it.
+     * @deny          (list) Listing all user profiles is strictly forbidden for privacy.
+     * @deny          (get) An authenticated user trying to read another user's profile.
+     * @principle     Restricts access to a user's own data tree and enforces self-creation.
+     */
+    match /users/{userId} {
+      // READ: Only the document owner can read their own profile.
+      allow get: if isOwner(userId);
+      // READ: Listing all users is explicitly forbidden to protect user privacy.
+      allow list: if false;
+
+      // WRITE: A user can create their own profile document.
+      // Validation ensures the document's internal `uid` matches the path `userId`.
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      // WRITE: The owner can update their profile.
+      // Validation ensures the `uid` field cannot be changed after creation.
+      allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
+      // WRITE: The owner can delete their profile.
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description   Secures a user's collection of CVs.
+     * @path          /users/{userId}/cvs/{cvId}
+     * @allow         (create) An authenticated user can create a new CV under their own profile.
+     * @allow         (get, list, update, delete) The owner can read, list, update, and delete their own CVs.
+     * @deny          (get) An authenticated user trying to access a CV owned by another user.
+     * @principle     Enforces document ownership for all operations within a user-specific subcollection.
+     */
+    match /users/{userId}/cvs/{cvId} {
+      // READ: The owner can read and list all of their own CVs.
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      // WRITE: The owner can create a new CV.
+      // Validation ensures the new CV document is correctly linked to the owner.
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      // WRITE: The owner can update an existing CV.
+      // Validation ensures the ownership link (`userId`) cannot be changed.
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      // WRITE: The owner can delete their own CV.
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
