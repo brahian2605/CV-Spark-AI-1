@@ -1,3 +1,4 @@
+'use client';
 import Link from "next/link";
 import Image from "next/image";
 import { PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
@@ -19,12 +20,18 @@ import {
 import { Header } from "@/components/layout/Header";
 import { cvs } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useTranslation } from "@/context/LanguageProvider";
 
 
 export default function DashboardPage() {
+  const { t, language } = useTranslation();
   const cvPreviews = {
     "1": PlaceHolderImages.find((i) => i.id === "cv-preview-1"),
     "2": PlaceHolderImages.find((i) => i.id === "cv-preview-2"),
+  };
+  
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString(language);
   };
 
   return (
@@ -33,11 +40,11 @@ export default function DashboardPage() {
       <main className="flex-1 p-4 md:p-8">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold font-headline">My CVs</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('dashboard.title')}</h1>
             <Button asChild>
               <Link href="/editor/new">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create New CV
+                {t('dashboard.createButton')}
               </Link>
             </Button>
           </div>
@@ -52,7 +59,7 @@ export default function DashboardPage() {
                       <div className="space-y-1.5">
                         <CardTitle>{cv.title}</CardTitle>
                         <CardDescription>
-                          Updated {new Date(cv.updatedAt).toLocaleDateString()}
+                          {t('dashboard.updated')} {formatDate(cv.updatedAt)}
                         </CardDescription>
                       </div>
                       <DropdownMenu>
@@ -64,11 +71,11 @@ export default function DashboardPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('dashboard.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('dashboard.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -87,7 +94,7 @@ export default function DashboardPage() {
                     </CardContent>
                     <CardFooter>
                       <Button variant="secondary" className="w-full as-child">
-                         <Link href={`/editor/${cv.id}`}>Edit CV</Link>
+                         <Link href={`/editor/${cv.id}`}>{t('dashboard.editCv')}</Link>
                       </Button>
                     </CardFooter>
                   </Card>
@@ -96,14 +103,14 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
-              <h2 className="text-2xl font-semibold mb-2">No CVs Yet</h2>
+              <h2 className="text-2xl font-semibold mb-2">{t('dashboard.emptyTitle')}</h2>
               <p className="text-muted-foreground mb-4">
-                Click the button to create your first professional CV.
+                {t('dashboard.emptyDescription')}
               </p>
               <Button asChild>
                 <Link href="/editor/new">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Create New CV
+                  {t('dashboard.createButton')}
                 </Link>
               </Button>
             </div>

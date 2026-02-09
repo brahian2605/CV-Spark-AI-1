@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/Logo";
+import { useTranslation } from "@/context/LanguageProvider";
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
@@ -22,6 +25,8 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   );
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
       <div className="w-full max-w-md p-4">
@@ -30,15 +35,15 @@ export default function RegisterPage() {
         </div>
         <Card>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+            <CardTitle className="text-2xl font-headline">{t('register.title')}</CardTitle>
             <CardDescription>
-              Start your journey to a perfect CV today
+              {t('register.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <Button variant="outline" className="w-full">
               <GoogleIcon className="mr-2 h-4 w-4" />
-              Sign up with Google
+              {t('register.google')}
             </Button>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -46,29 +51,29 @@ export default function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
+                  {t('register.orContinue')}
                 </span>
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('register.nameLabel')}</Label>
               <Input id="name" placeholder="John Doe" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('register.emailLabel')}</Label>
               <Input id="email" type="email" placeholder="m@example.com" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('register.passwordLabel')}</Label>
               <Input id="password" type="password" />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full">Create Account</Button>
+            <Button className="w-full">{t('register.createButton')}</Button>
             <div className="text-center text-sm">
-              Already have an account?{" "}
+              {t('register.hasAccount')}{" "}
               <Link href="/login" className="underline">
-                Login
+                {t('register.loginLink')}
               </Link>
             </div>
           </CardFooter>

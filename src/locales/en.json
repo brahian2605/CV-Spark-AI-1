@@ -1,0 +1,66 @@
+{
+  "header": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Log out",
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "home": {
+    "heroTitle": "Create your next CV with the power of AI",
+    "heroSubtitle": "Build a professional CV that stands out. Use our modern templates and AI assistant to craft the perfect resume in minutes.",
+    "createCvButton": "Create My CV",
+    "featuresTitle": "Key Features",
+    "featuresSubtitle": "Craft Your Future",
+    "featuresDescription": "CV Spark AI provides all the tools you need to build a CV that opens doors.",
+    "featureModernTemplatesTitle": "Modern Templates",
+    "featureModernTemplatesDescription": "Choose from a selection of modern, professional, and minimalist templates to best represent you.",
+    "featureAiAssistantTitle": "AI-Powered Assistant",
+    "featureAiAssistantDescription": "Generate a compelling professional profile with our AI assistant, tailored to your experience and goals.",
+    "featurePdfExportTitle": "Export to PDF",
+    "featurePdfExportDescription": "Easily download your finished CV as a high-quality PDF, ready to be shared with recruiters.",
+    "ctaTitle": "Ready to Land Your Dream Job?",
+    "ctaSubtitle": "Start building your professional CV today. It's fast, easy, and intelligent.",
+    "ctaButton": "Sign Up for Free",
+    "footerRights": "© 2024 CV Spark AI. All rights reserved.",
+    "footerTerms": "Terms of Service",
+    "footerPrivacy": "Privacy"
+  },
+  "logo": {
+    "appName": "CV Spark AI"
+  },
+  "login": {
+    "welcome": "Welcome Back",
+    "credentials": "Enter your credentials to access your account",
+    "google": "Sign in with Google",
+    "orContinue": "Or continue with",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Login",
+    "noAccount": "Don't have an account?",
+    "signupLink": "Sign up"
+  },
+  "register": {
+    "title": "Create an Account",
+    "subtitle": "Start your journey to a perfect CV today",
+    "google": "Sign up with Google",
+    "orContinue": "Or continue with",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "createButton": "Create Account",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Login"
+  },
+  "dashboard": {
+    "title": "My CVs",
+    "createButton": "Create New CV",
+    "updated": "Updated",
+    "edit": "Edit",
+    "delete": "Delete",
+    "editCv": "Edit CV",
+    "emptyTitle": "No CVs Yet",
+    "emptyDescription": "Click the button to create your first professional CV."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "header": {
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse"
+  },
+  "home": {
+    "heroTitle": "Crea tu próximo CV con el poder de la IA",
+    "heroSubtitle": "Crea un CV profesional que se destaque. Usa nuestras plantillas modernas y asistente de IA para crear el currículum perfecto en minutos.",
+    "createCvButton": "Crear mi CV",
+    "featuresTitle": "Características Clave",
+    "featuresSubtitle": "Forja tu futuro",
+    "featuresDescription": "CV Spark AI te brinda todas las herramientas que necesitas para crear un CV que abre puertas.",
+    "featureModernTemplatesTitle": "Plantillas Modernas",
+    "featureModernTemplatesDescription": "Elige entre una selección de plantillas modernas, profesionales y minimalistas para representarte mejor.",
+    "featureAiAssistantTitle": "Asistente con IA",
+    "featureAiAssistantDescription": "Genera un perfil profesional convincente con nuestro asistente de IA, adaptado a tu experiencia y objetivos.",
+    "featurePdfExportTitle": "Exportar a PDF",
+    "featurePdfExportDescription": "Descarga fácilmente tu CV terminado como un PDF de alta calidad, listo para compartir con los reclutadores.",
+    "ctaTitle": "¿Listo para conseguir el trabajo de tus sueños?",
+    "ctaSubtitle": "Comienza a construir tu CV profesional hoy. Es rápido, fácil e inteligente.",
+    "ctaButton": "Regístrate Gratis",
+    "footerRights": "© 2024 CV Spark AI. Todos los derechos reservados.",
+    "footerTerms": "Términos de servicio",
+    "footerPrivacy": "Privacidad"
+  },
+  "logo": {
+    "appName": "CV Spark AI"
+  },
+  "login": {
+    "welcome": "Bienvenido de nuevo",
+    "credentials": "Ingresa tus credenciales para acceder a tu cuenta",
+    "google": "Iniciar sesión con Google",
+    "orContinue": "O continuar con",
+    "emailLabel": "Correo electrónico",
+    "passwordLabel": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "loginButton": "Iniciar sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "signupLink": "Regístrate"
+  },
+  "register": {
+    "title": "Crear una cuenta",
+    "subtitle": "Comienza tu viaje hacia un CV perfecto hoy",
+    "google": "Registrarse con Google",
+    "orContinue": "O continuar con",
+    "nameLabel": "Nombre",
+    "emailLabel": "Correo electrónico",
+    "passwordLabel": "Contraseña",
+    "createButton": "Crear cuenta",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "loginLink": "Iniciar sesión"
+  },
+  "dashboard": {
+    "title": "Mis CVs",
+    "createButton": "Crear Nuevo CV",
+    "updated": "Actualizado",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "editCv": "Editar CV",
+    "emptyTitle": "Aún no hay CVs",
+    "emptyDescription": "Haz clic en el botón para crear tu primer CV profesional."
+  }
+}

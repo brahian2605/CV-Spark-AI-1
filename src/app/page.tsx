@@ -1,6 +1,9 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, FileText, Sparkles, Download } from "lucide-react";
+import { useTranslation } from "@/context/LanguageProvider";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,25 +13,26 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 const features = [
   {
     icon: <FileText className="h-8 w-8 text-primary-foreground" />,
-    title: "Modern Templates",
-    description: "Choose from a selection of modern, professional, and minimalist templates to best represent you.",
+    titleKey: "home.featureModernTemplatesTitle",
+    descriptionKey: "home.featureModernTemplatesDescription",
     image: PlaceHolderImages.find(img => img.id === 'template-feature'),
   },
   {
     icon: <Sparkles className="h-8 w-8 text-primary-foreground" />,
-    title: "AI-Powered Assistant",
-    description: "Generate a compelling professional profile with our AI assistant, tailored to your experience and goals.",
+    titleKey: "home.featureAiAssistantTitle",
+    descriptionKey: "home.featureAiAssistantDescription",
     image: PlaceHolderImages.find(img => img.id === 'ai-feature'),
   },
   {
     icon: <Download className="h-8 w-8 text-primary-foreground" />,
-    title: "Export to PDF",
-    description: "Easily download your finished CV as a high-quality PDF, ready to be shared with recruiters.",
+    titleKey: "home.featurePdfExportTitle",
+    descriptionKey: "home.featurePdfExportDescription",
     image: PlaceHolderImages.find(img => img.id === 'pdf-feature'),
   },
 ];
 
 export default function Home() {
+  const { t } = useTranslation();
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-image');
 
   return (
@@ -41,16 +45,16 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Create your next CV with the power of AI
+                    {t('home.heroTitle')}
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Build a professional CV that stands out. Use our modern templates and AI assistant to craft the perfect resume in minutes.
+                    {t('home.heroSubtitle')}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button asChild size="lg">
                     <Link href="/dashboard">
-                      Create My CV <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('home.createCvButton')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -73,24 +77,24 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Key Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Craft Your Future</h2>
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">{t('home.featuresTitle')}</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">{t('home.featuresSubtitle')}</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  CV Spark AI provides all the tools you need to build a CV that opens doors.
+                  {t('home.featuresDescription')}
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 mt-12">
               {features.map((feature) => (
-                <Card key={feature.title} className="shadow-md hover:shadow-xl transition-shadow">
+                <Card key={feature.titleKey} className="shadow-md hover:shadow-xl transition-shadow">
                   <CardHeader className="flex flex-col items-center text-center">
                     <div className="p-4 bg-primary rounded-full mb-4">
                       {feature.icon}
                     </div>
-                    <CardTitle className="font-headline">{feature.title}</CardTitle>
+                    <CardTitle className="font-headline">{t(feature.titleKey)}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-center text-muted-foreground">
-                    <p>{feature.description}</p>
+                    <p>{t(feature.descriptionKey)}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -101,15 +105,15 @@ export default function Home() {
         <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
             <div className="space-y-3">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight font-headline">Ready to Land Your Dream Job?</h2>
+              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight font-headline">{t('home.ctaTitle')}</h2>
               <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Start building your professional CV today. It's fast, easy, and intelligent.
+                {t('home.ctaSubtitle')}
               </p>
             </div>
             <div className="mx-auto w-full max-w-sm space-y-2">
               <Button asChild size="lg">
                 <Link href="/register">
-                  Sign Up for Free
+                  {t('home.ctaButton')}
                 </Link>
               </Button>
             </div>
@@ -117,13 +121,13 @@ export default function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 CV Spark AI. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">{t('home.footerRights')}</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4">
-            Terms of Service
+            {t('home.footerTerms')}
           </Link>
           <Link href="#" className="text-xs hover:underline underline-offset-4">
-            Privacy
+            {t('home.footerPrivacy')}
           </Link>
         </nav>
       </footer>

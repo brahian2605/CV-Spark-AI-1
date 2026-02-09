@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/Logo";
+import { useTranslation } from "@/context/LanguageProvider";
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
@@ -22,6 +25,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   );
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
       <div className="w-full max-w-md p-4">
@@ -30,15 +34,15 @@ export default function LoginPage() {
         </div>
         <Card>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-headline">{t('login.welcome')}</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              {t('login.credentials')}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <Button variant="outline" className="w-full">
               <GoogleIcon className="mr-2 h-4 w-4" />
-              Sign in with Google
+              {t('login.google')}
             </Button>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -46,30 +50,30 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
+                  {t('login.orContinue')}
                 </span>
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login.emailLabel')}</Label>
               <Input id="email" type="email" placeholder="m@example.com" />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                 <Link href="#" className="ml-auto inline-block text-sm underline">
-                  Forgot password?
+                  {t('login.forgotPassword')}
                 </Link>
               </div>
               <Input id="password" type="password" />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full">Login</Button>
+            <Button className="w-full">{t('login.loginButton')}</Button>
             <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
+              {t('login.noAccount')}{" "}
               <Link href="/register" className="underline">
-                Sign up
+                {t('login.signupLink')}
               </Link>
             </div>
           </CardFooter>
