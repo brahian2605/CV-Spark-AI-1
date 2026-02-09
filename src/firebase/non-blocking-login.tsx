@@ -11,7 +11,6 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 function handleAuthError(error: any) {
-  console.error("Firebase Auth Error:", error.code, error.message);
   let description = "An unknown error occurred. Please try again.";
   
   if (error.code) {
