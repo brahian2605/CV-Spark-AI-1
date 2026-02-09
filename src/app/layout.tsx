@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { LanguageProvider } from '@/context/LanguageProvider';
 import { HtmlLangUpdater } from '@/components/layout/HtmlLangUpdater';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'CV Spark AI',
@@ -23,9 +24,11 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <LanguageProvider>
-          <HtmlLangUpdater />
-          {children}
-          <Toaster />
+          <FirebaseClientProvider>
+            <HtmlLangUpdater />
+            {children}
+            <Toaster />
+          </FirebaseClientProvider>
         </LanguageProvider>
       </body>
     </html>

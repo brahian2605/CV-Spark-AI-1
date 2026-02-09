@@ -1,6 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/Logo";
 import { useTranslation } from "@/context/LanguageProvider";
+import { useAuth, useUser, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase';
+import { Loader2 } from 'lucide-react';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
@@ -26,6 +30,41 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    initiateEmailSignIn(auth, email, password);
+    // The onAuthStateChanged listener in the provider will handle the redirect
+    // We can set a timeout to stop loading state in case of an error
+    setTimeout(() => setIsLoading(false), 5000);
+  };
+  
+  const handleGoogleLogin = () => {
+    initiateGoogleSignIn(auth);
+  };
+  
+  if (isUserLoading || user) {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-secondary">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
       <div className="w-full max-w-md p-4">
@@ -39,44 +78,49 @@ export default function LoginPage() {
               {t('login.credentials')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <Button variant="outline" className="w-full">
-              <GoogleIcon className="mr-2 h-4 w-4" />
-              {t('login.google')}
-            </Button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+          <form onSubmit={handleEmailLogin}>
+            <CardContent className="grid gap-4">
+              <Button variant="outline" className="w-full" type="button" onClick={handleGoogleLogin}>
+                <GoogleIcon className="mr-2 h-4 w-4" />
+                {t('login.google')}
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    {t('login.orContinue')}
+                  </span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t('login.orContinue')}
-                </span>
+              <div className="grid gap-2">
+                <Label htmlFor="email">{t('login.emailLabel')}</Label>
+                <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">{t('login.emailLabel')}</Label>
-              <Input id="email" type="email" placeholder="m@example.com" />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
-                <Link href="#" className="ml-auto inline-block text-sm underline">
-                  {t('login.forgotPassword')}
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">{t('login.passwordLabel')}</Label>
+                  <Link href="#" className="ml-auto inline-block text-sm underline">
+                    {t('login.forgotPassword')}
+                  </Link>
+                </div>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('login.loginButton')}
+              </Button>
+              <div className="text-center text-sm">
+                {t('login.noAccount')}{" "}
+                <Link href="/register" className="underline">
+                  {t('login.signupLink')}
                 </Link>
               </div>
-              <Input id="password" type="password" />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full">{t('login.loginButton')}</Button>
-            <div className="text-center text-sm">
-              {t('login.noAccount')}{" "}
-              <Link href="/register" className="underline">
-                {t('login.signupLink')}
-              </Link>
-            </div>
-          </CardFooter>
+            </CardFooter>
+          </form>
         </Card>
       </div>
     </div>

@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
+import { doc, collection, serverTimestamp } from 'firebase/firestore';
 
 import { Header } from '@/components/layout/Header';
 import { CvForm } from '@/components/cv/CvForm';
 import { CvPreview } from '@/components/cv/CvPreview';
 import type { CvData, CvTemplate } from '@/lib/types';
-import { cvs } from '@/lib/data'; // Using mock data for now
 import { Button } from '@/components/ui/button';
-import { Download, Save } from 'lucide-react';
+import { Download, Save, Loader2 } from 'lucide-react';
+import { useUser, useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -55,36 +58,61 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const emptyCv: CvData = {
-  id: 'new',
-  userId: 'user1',
-  title: 'Untitled CV',
-  personalInfo: { name: '', email: '', phone: '', address: '', linkedin: '', website: '', avatar: '' },
-  profile: '',
-  experience: [],
-  education: [],
-  skills: [],
-  languages: [],
-  projects: [],
-  template: 'modern',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
 export default function EditorPage({ params }: { params: { cvId: string } }) {
-  const [template, setTemplate] = useState<CvTemplate>('modern');
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
-  const existingCv = params.cvId === 'new' ? emptyCv : cvs.find((cv) => cv.id === params.cvId);
+  const isNewCv = params.cvId === 'new';
+
+  const cvDocRef = useMemoFirebase(() => {
+    if (!user || isNewCv) return null;
+    return doc(firestore, 'users', user.uid, 'cvs', params.cvId);
+  }, [firestore, user, params.cvId, isNewCv]);
+  
+  const { data: existingCv, isLoading: isCvLoading } = useDoc<CvData>(cvDocRef);
+  
+  const [template, setTemplate] = useState<CvTemplate>('modern');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      ...existingCv,
-      skills: existingCv?.skills.map((s, i) => ({ id: `skill-${i}`, value: s })) || [],
-      languages: existingCv?.languages.map((l, i) => ({ id: `lang-${i}`, value: l })) || [],
-    },
     mode: 'onBlur',
   });
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  useEffect(() => {
+    let cvData;
+    if (isNewCv) {
+      cvData = {
+        title: 'Untitled CV',
+        personalInfo: { name: user?.displayName || '', email: user?.email || '', phone: '', address: '', linkedin: '', website: '', avatar: user?.photoURL || '' },
+        profile: '',
+        experience: [],
+        education: [],
+        skills: [],
+        languages: [],
+        projects: [],
+      };
+    } else if (existingCv) {
+      cvData = {
+        ...existingCv,
+        skills: existingCv.skills.map((s, i) => ({ id: `skill-${i}`, value: s })),
+        languages: existingCv.languages.map((l, i) => ({ id: `lang-${i}`, value: l })),
+      };
+      setTemplate(existingCv.template);
+    }
+    
+    if (cvData) {
+        form.reset(cvData);
+    }
+  }, [existingCv, isNewCv, form, user]);
+
 
   const cvData = form.watch();
 
@@ -92,10 +120,57 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
     setTemplate(newTemplate);
   };
   
-  const onSubmit = (values: FormValues) => {
-    // Here you would save the data to Firebase
-    console.log(values);
+  const handleSave = () => {
+    if(!user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.'});
+      return;
+    }
+
+    const values = form.getValues();
+    const dataToSave = {
+        ...values,
+        skills: values.skills.map(s => s.value),
+        languages: values.languages.map(l => l.value),
+        template: template,
+        userId: user.uid,
+        updatedAt: serverTimestamp(),
+    };
+
+    if (isNewCv) {
+        const newDocRef = collection(firestore, 'users', user.uid, 'cvs');
+        addDocumentNonBlocking(newDocRef, { ...dataToSave, createdAt: serverTimestamp() })
+          .then(docRef => {
+            toast({ title: 'CV Saved!', description: 'Your new CV has been created.' });
+            if (docRef) {
+              router.push(`/editor/${docRef.id}`);
+            }
+          });
+    } else {
+        const docRef = doc(firestore, 'users', user.uid, 'cvs', params.cvId);
+        setDocumentNonBlocking(docRef, dataToSave, { merge: true });
+        toast({ title: 'CV Updated!', description: 'Your changes have been saved.' });
+    }
   };
+
+  if (isUserLoading || (!isNewCv && isCvLoading)) {
+     return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (!isNewCv && !existingCv && !isCvLoading) {
+      return (
+          <div className="flex h-screen items-center justify-center text-center">
+              <div>
+                <h1 className="text-2xl font-bold">CV not found</h1>
+                <p className="text-muted-foreground">This CV may have been deleted or you may not have permission to view it.</p>
+                <Button asChild className="mt-4"><Link href="/dashboard">Go to Dashboard</Link></Button>
+              </div>
+          </div>
+      )
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -106,10 +181,11 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
            <div className="p-4 border-b flex items-center justify-between gap-4">
               <h1 className="text-xl font-bold font-headline truncate">Editing: {cvData.title}</h1>
               <div className="flex items-center gap-2">
-                <Button variant="outline">
-                    <Save className="mr-2 h-4 w-4" /> Save
+                <Button variant="outline" onClick={handleSave} disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
+                    Save
                 </Button>
-                <Button>
+                <Button disabled>
                     <Download className="mr-2 h-4 w-4" /> Download PDF
                 </Button>
               </div>
@@ -122,7 +198,7 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
         {/* Preview Panel */}
         <div className="hidden md:flex flex-col bg-secondary overflow-y-auto">
           <CvPreview
-            data={{ ...cvData, skills: cvData.skills.map(s => s.value), languages: cvData.languages.map(l => l.value), template }}
+            data={{ ...cvData, skills: cvData.skills?.map(s => s.value), languages: cvData.languages?.map(l => l.value), template }}
             onTemplateChange={handleTemplateChange}
           />
         </div>
