@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import type { CvData, CvTemplate } from '@/lib/types';
 import {
   Select,
@@ -23,42 +24,48 @@ const templates: { value: CvTemplate; label: string }[] = [
   { value: 'minimalist', label: 'Minimalist' },
 ];
 
-export function CvPreview({ data, onTemplateChange }: CvPreviewProps) {
-  const renderTemplate = () => {
-    switch (data.template) {
-      case 'modern':
-        return <ModernTemplate data={data} />;
-      case 'professional':
-        return <ProfessionalTemplate data={data} />;
-      case 'minimalist':
-        return <MinimalistTemplate data={data} />;
-      default:
-        return <ModernTemplate data={data} />;
-    }
-  };
+export const CvPreview = React.forwardRef<HTMLDivElement, CvPreviewProps>(
+  ({ data, onTemplateChange }, ref) => {
+    const renderTemplate = () => {
+      switch (data.template) {
+        case 'modern':
+          return <ModernTemplate data={data} />;
+        case 'professional':
+          return <ProfessionalTemplate data={data} />;
+        case 'minimalist':
+          return <MinimalistTemplate data={data} />;
+        default:
+          return <ModernTemplate data={data} />;
+      }
+    };
 
-  return (
-    <div className="p-4 md:p-8 flex flex-col items-center gap-6">
-      <div className="w-full max-w-xs">
-        <Select
-          defaultValue={data.template}
-          onValueChange={(value: CvTemplate) => onTemplateChange(value)}
+    return (
+      <div className="p-4 md:p-8 flex flex-col items-center gap-6">
+        <div className="w-full max-w-xs">
+          <Select
+            defaultValue={data.template}
+            onValueChange={(value: CvTemplate) => onTemplateChange(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a template" />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((template) => (
+                <SelectItem key={template.value} value={template.value}>
+                  {template.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div
+          ref={ref}
+          className="w-full max-w-[8.5in] aspect-[8.5/11] bg-white shadow-lg rounded-md overflow-hidden"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a template" />
-          </SelectTrigger>
-          <SelectContent>
-            {templates.map((template) => (
-              <SelectItem key={template.value} value={template.value}>
-                {template.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {renderTemplate()}
+        </div>
       </div>
-      <div className="w-full max-w-[8.5in] aspect-[8.5/11] bg-white shadow-lg rounded-md overflow-hidden">
-        {renderTemplate()}
-      </div>
-    </div>
-  );
-}
+    );
+  }
+);
+CvPreview.displayName = 'CvPreview';

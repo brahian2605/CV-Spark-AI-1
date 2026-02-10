@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { doc, collection, serverTimestamp } from 'firebase/firestore';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 import { Header } from '@/components/layout/Header';
 import { CvForm } from '@/components/cv/CvForm';
@@ -15,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Save, Loader2 } from 'lucide-react';
 import { useUser, useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -63,6 +66,8 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const isNewCv = params.cvId === 'new';
 
@@ -152,6 +157,47 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!previewRef.current) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Preview not available for download.',
+        });
+        return;
+    }
+    setIsDownloading(true);
+
+    html2canvas(previewRef.current, {
+      scale: 2,
+      useCORS: true,
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const cvTitle = form.getValues('title') || 'cv';
+      pdf.save(`${cvTitle.replace(/ /g, '_')}.pdf`);
+      setIsDownloading(false);
+      toast({ title: 'Success!', description: 'Your CV has been downloaded.' });
+    }).catch(err => {
+      console.error("Error generating PDF", err);
+      toast({
+        variant: 'destructive',
+        title: 'PDF Download Failed',
+        description: 'An error occurred while generating the PDF. Please try again.',
+      });
+      setIsDownloading(false);
+    });
+  };
+
   if (isUserLoading || (!isNewCv && isCvLoading)) {
      return (
       <div className="flex h-screen items-center justify-center">
@@ -181,12 +227,13 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
            <div className="p-4 border-b flex items-center justify-between gap-4">
               <h1 className="text-xl font-bold font-headline truncate">Editing: {cvData.title}</h1>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleSave} disabled={form.formState.isSubmitting}>
+                <Button variant="outline" onClick={handleSave} disabled={form.formState.isSubmitting || isDownloading}>
                     {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
                     Save
                 </Button>
-                <Button disabled>
-                    <Download className="mr-2 h-4 w-4" /> Download PDF
+                <Button onClick={handleDownloadPdf} disabled={form.formState.isSubmitting || isDownloading}>
+                    {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    Download PDF
                 </Button>
               </div>
            </div>
@@ -198,6 +245,7 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
         {/* Preview Panel */}
         <div className="hidden md:flex flex-col bg-secondary overflow-y-auto">
           <CvPreview
+            ref={previewRef}
             data={{ ...cvData, skills: cvData.skills?.map(s => s.value), languages: cvData.languages?.map(l => l.value), template }}
             onTemplateChange={handleTemplateChange}
           />
