@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateProfessionalProfile } from '@/lib/actions';
+import { Input } from '../ui/input';
 
 interface AiProfileGeneratorProps {
   form: UseFormReturn<any>;
@@ -91,7 +92,7 @@ export function AiProfileGenerator({ form }: AiProfileGeneratorProps) {
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="desired-job">Desired Job / Role</Label>
-            <Textarea id="desired-job" value={desiredJob} onChange={(e) => setDesiredJob(e.target.value)} placeholder="e.g., Senior Frontend Developer" />
+            <Input id="desired-job" value={desiredJob} onChange={(e) => setDesiredJob(e.target.value)} placeholder="e.g., Senior Frontend Developer" />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="experience-summary">Professional Experience</Label>

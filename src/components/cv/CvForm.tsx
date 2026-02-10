@@ -81,6 +81,17 @@ export function CvForm({ form }: CvFormProps) {
                 <FormField name="personalInfo.address" control={form.control} render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} placeholder="City, Country" /></FormControl><FormMessage /></FormItem>)} />
                 <FormField name="personalInfo.linkedin" control={form.control} render={({ field }) => (<FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input {...field} placeholder="linkedin.com/in/..." /></FormControl><FormMessage /></FormItem>)} />
                 <FormField name="personalInfo.website" control={form.control} render={({ field }) => (<FormItem><FormLabel>Website/Portfolio</FormLabel><FormControl><Input {...field} placeholder="your-portfolio.com" /></FormControl><FormMessage /></FormItem>)} />
+                <FormField
+                    control={form.control}
+                    name="personalInfo.avatar"
+                    render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                        <FormLabel>Avatar URL</FormLabel>
+                        <FormControl><Input {...field} placeholder="https://example.com/your-photo.jpg" /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </div>
           </TabsContent>
 
