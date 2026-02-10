@@ -62,5 +62,16 @@
     "editCv": "Edit CV",
     "emptyTitle": "No CVs Yet",
     "emptyDescription": "Click the button to create your first professional CV."
+  },
+  "errors": {
+    "authFailedTitle": "Authentication Failed",
+    "unknown": "An unknown error occurred. Please try again.",
+    "wrongPassword": "Incorrect password. Please try again.",
+    "userNotFound": "No account found with this email.",
+    "emailAlreadyInUse": "This email is already registered. Please login.",
+    "operationNotAllowed": "This sign-in method is not enabled. It must be enabled in the Firebase console.",
+    "weakPassword": "The password is too weak. Please choose a stronger password.",
+    "popupClosed": "The sign-in window was closed. Please try again.",
+    "popupCancelled": "The sign-in was cancelled. Please try again."
   }
 }

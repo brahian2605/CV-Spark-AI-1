@@ -62,5 +62,16 @@
     "editCv": "Editar CV",
     "emptyTitle": "Aún no hay CVs",
     "emptyDescription": "Haz clic en el botón para crear tu primer CV profesional."
+  },
+  "errors": {
+    "authFailedTitle": "Fallo de autenticación",
+    "unknown": "Ocurrió un error desconocido. Por favor, inténtalo de nuevo.",
+    "wrongPassword": "Contraseña incorrecta. Por favor, inténtalo de nuevo.",
+    "userNotFound": "No se encontró ninguna cuenta con este correo electrónico.",
+    "emailAlreadyInUse": "Este correo electrónico ya está registrado. Por favor, inicia sesión.",
+    "operationNotAllowed": "Este método de inicio de sesión no está habilitado. Debe habilitarse en la consola de Firebase.",
+    "weakPassword": "La contraseña es demasiado débil. Por favor, elige una contraseña más fuerte.",
+    "popupClosed": "La ventana de inicio de sesión fue cerrada. Por favor, inténtalo de nuevo.",
+    "popupCancelled": "El inicio de sesión fue cancelado. Por favor, inténtalo de nuevo."
   }
 }

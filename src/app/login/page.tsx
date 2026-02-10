@@ -18,6 +18,7 @@ import { Logo } from "@/components/layout/Logo";
 import { useTranslation } from "@/context/LanguageProvider";
 import { useAuth, useUser, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" {...props}>
@@ -33,6 +34,7 @@ export default function LoginPage() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -44,17 +46,61 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleAuthError = (error: any) => {
+    let description = t('errors.unknown');
+    
+    if (error.code) {
+      switch (error.code) {
+        case 'auth/wrong-password':
+          description = t('errors.wrongPassword');
+          break;
+        case 'auth/user-not-found':
+          description = t('errors.userNotFound');
+          break;
+        case 'auth/email-already-in-use':
+          description = t('errors.emailAlreadyInUse');
+          break;
+        case 'auth/operation-not-allowed':
+          description = t('errors.operationNotAllowed');
+          break;
+        case 'auth/weak-password':
+          description = t('errors.weakPassword');
+          break;
+        case 'auth/popup-closed-by-user':
+          description = t('errors.popupClosed');
+          break;
+        case 'auth/cancelled-popup-request':
+            description = t('errors.popupCancelled');
+            break;
+        default:
+          description = `${t('errors.unknown')} (${error.code})`;
+          break;
+      }
+    }
+    toast({
+      variant: "destructive",
+      title: t('errors.authFailedTitle'),
+      description: description,
+    });
+  };
+
+  const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    initiateEmailSignIn(auth, email, password);
-    // The onAuthStateChanged listener in the provider will handle the redirect
-    // We can set a timeout to stop loading state in case of an error
-    setTimeout(() => setIsLoading(false), 5000);
+    initiateEmailSignIn(auth, email, password)
+      .catch((error) => {
+        handleAuthError(error);
+        setIsLoading(false);
+      });
   };
   
   const handleGoogleLogin = () => {
-    initiateGoogleSignIn(auth);
+    setIsLoading(true);
+    initiateGoogleSignIn(auth)
+      .catch((error) => {
+        handleAuthError(error);
+        setIsLoading(false);
+      });
   };
   
   if (isUserLoading || user) {
