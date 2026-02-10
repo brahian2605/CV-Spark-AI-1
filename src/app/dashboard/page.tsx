@@ -53,7 +53,12 @@ export default function DashboardPage() {
     } else {
         return 'N/A';
     }
-    return d.toLocaleDateString(language);
+    const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    };
+    return d.toLocaleDateString(language, options);
   };
   
   const handleDelete = (cvId: string) => {
