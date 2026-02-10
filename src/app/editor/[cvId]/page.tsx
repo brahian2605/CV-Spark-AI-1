@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { doc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, serverTimestamp, setDoc, addDoc } from 'firebase/firestore';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -15,7 +15,7 @@ import { CvPreview } from '@/components/cv/CvPreview';
 import type { CvData, CvTemplate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Download, Save, Loader2 } from 'lucide-react';
-import { useUser, useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -68,6 +68,7 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
   const firestore = useFirestore();
   const previewRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
 
   const isNewCv = params.cvId === 'new';
 
@@ -92,6 +93,7 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
   }, [user, isUserLoading, router]);
 
   useEffect(() => {
+    if (isCvLoading) return;
     let cvData;
     if (isNewCv) {
       cvData = {
@@ -116,21 +118,23 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
     if (cvData) {
         form.reset(cvData);
     }
-  }, [existingCv, isNewCv, form, user]);
+  }, [existingCv, isNewCv, form, user, isCvLoading]);
 
 
   const cvData = form.watch();
 
-  const handleTemplateChange = (newTemplate: CvTemplate) => {
-    setTemplate(newTemplate);
-  };
-  
-  const handleSave = () => {
-    if(!user) {
-      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.'});
+  const handleSave = useCallback(async (isAutosave = false) => {
+    if (!user) {
+      if (!isAutosave) {
+        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to save.' });
+      }
       return;
     }
 
+    if (saveStatus === 'saving') return;
+    
+    setSaveStatus('saving');
+    
     const values = form.getValues();
     const dataToSave = {
         ...values,
@@ -141,22 +145,53 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
         updatedAt: serverTimestamp(),
     };
 
-    if (isNewCv) {
-        const newDocRef = collection(firestore, 'users', user.uid, 'cvs');
-        addDocumentNonBlocking(newDocRef, { ...dataToSave, createdAt: serverTimestamp() })
-          .then(docRef => {
+    try {
+      if (isNewCv) {
+          const newDocRef = collection(firestore, 'users', user.uid, 'cvs');
+          const docRef = await addDoc(newDocRef, { ...dataToSave, createdAt: serverTimestamp() });
+          
+          if (!isAutosave) {
             toast({ title: 'CV Saved!', description: 'Your new CV has been created.' });
-            if (docRef) {
-              router.push(`/editor/${docRef.id}`);
-            }
-          });
-    } else {
-        const docRef = doc(firestore, 'users', user.uid, 'cvs', params.cvId);
-        setDocumentNonBlocking(docRef, dataToSave, { merge: true });
-        toast({ title: 'CV Updated!', description: 'Your changes have been saved.' });
-    }
-  };
+          }
+          router.replace(`/editor/${docRef.id}`);
 
+      } else {
+          const docRef = doc(firestore, 'users', user.uid, 'cvs', params.cvId);
+          await setDoc(docRef, dataToSave, { merge: true });
+          
+          if (!isAutosave) {
+            toast({ title: 'CV Updated!', description: 'Your changes have been saved.' });
+          }
+      }
+      form.reset(values);
+      setSaveStatus('saved');
+    } catch (error) {
+      console.error("Error saving CV:", error);
+      setSaveStatus('unsaved');
+      if (!isAutosave) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not save your CV. Please try again.' });
+      }
+    }
+  }, [user, firestore, form, template, isNewCv, params.cvId, router, toast, saveStatus]);
+  
+  useEffect(() => {
+    if (!form.formState.isDirty || isCvLoading) {
+      return;
+    }
+    
+    setSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      handleSave(true);
+    }, 2000); 
+
+    return () => clearTimeout(timer);
+  }, [cvData, form.formState.isDirty, handleSave, isCvLoading]);
+
+
+  const handleTemplateChange = (newTemplate: CvTemplate) => {
+    setTemplate(newTemplate);
+  };
+  
   const handleDownloadPdf = () => {
     if (!previewRef.current) {
         toast({
@@ -227,11 +262,16 @@ export default function EditorPage({ params }: { params: { cvId: string } }) {
            <div className="p-4 border-b flex items-center justify-between gap-4">
               <h1 className="text-xl font-bold font-headline truncate">Editing: {cvData.title}</h1>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleSave} disabled={form.formState.isSubmitting || isDownloading}>
-                    {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} 
-                    Save
+                <div className="text-sm text-muted-foreground w-32 text-right">
+                  {saveStatus === 'saving' && <span className="flex items-center justify-end"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</span>}
+                  {saveStatus === 'saved' && 'All changes saved'}
+                  {saveStatus === 'unsaved' && 'Unsaved changes'}
+                </div>
+                <Button variant="outline" onClick={() => handleSave(false)} disabled={saveStatus !== 'unsaved' || isDownloading}>
+                    <Save className="mr-2 h-4 w-4" /> 
+                    Save Now
                 </Button>
-                <Button onClick={handleDownloadPdf} disabled={form.formState.isSubmitting || isDownloading}>
+                <Button onClick={handleDownloadPdf} disabled={saveStatus === 'saving' || isDownloading}>
                     {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                     Download PDF
                 </Button>
