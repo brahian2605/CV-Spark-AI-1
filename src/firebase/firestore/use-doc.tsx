@@ -11,32 +11,32 @@ import {
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-/** Utility type to add an 'id' field to a given type T. */
+/** Tipo de utilidad para agregar un campo 'id' a un tipo T dado. */
 type WithId<T> = T & { id: string };
 
 /**
- * Interface for the return value of the useDoc hook.
- * @template T Type of the document data.
+ * Interfaz para el valor de retorno del hook useDoc.
+ * @template T Tipo de los datos del documento.
  */
 export interface UseDocResult<T> {
-  data: WithId<T> | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T> | null; // Datos del documento con ID, o nulo.
+  isLoading: boolean;       // Verdadero si está cargando.
+  error: FirestoreError | Error | null; // Objeto de error, o nulo.
 }
 
 /**
- * React hook to subscribe to a single Firestore document in real-time.
- * Handles nullable references.
+ * Hook de React para suscribirse a un único documento de Firestore en tiempo real.
+ * Maneja referencias nulas.
  * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedTargetRefOrQuery or BAD THINGS WILL HAPPEN
- * use useMemo to memoize it per React guidence.  Also make sure that it's dependencies are stable
- * references
+ * ¡IMPORTANTE! DEBES MEMOIZAR el docRef (memoizedDocRef) de entrada o SUCEDERÁN COSAS MALAS
+ * usa useMemo para memoizarlo según la guía de React. También asegúrate de que sus dependencias sean
+ * referencias estables
  *
  *
- * @template T Optional type for document data. Defaults to any.
+ * @template T Tipo opcional para los datos del documento. Por defecto es any.
  * @param {DocumentReference<DocumentData> | null | undefined} docRef -
- * The Firestore DocumentReference. Waits if null/undefined.
- * @returns {UseDocResult<T>} Object with data, isLoading, error.
+ * La DocumentReference de Firestore. Espera si es nulo/indefinido.
+ * @returns {UseDocResult<T>} Objeto con datos, isLoading, y error.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
@@ -57,7 +57,7 @@ export function useDoc<T = any>(
 
     setIsLoading(true);
     setError(null);
-    // Optional: setData(null); // Clear previous data instantly
+    // Opcional: setData(null); // Limpiar datos anteriores instantáneamente
 
     const unsubscribe = onSnapshot(
       memoizedDocRef,
@@ -65,10 +65,10 @@ export function useDoc<T = any>(
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
         } else {
-          // Document does not exist
+          // El documento no existe
           setData(null);
         }
-        setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
+        setError(null); // Limpiar cualquier error anterior en una instantánea exitosa (incluso si el documento no existe)
         setIsLoading(false);
       },
       (error: FirestoreError) => {
@@ -81,13 +81,13 @@ export function useDoc<T = any>(
         setData(null)
         setIsLoading(false)
 
-        // trigger global error propagation
+        // Disparar la propagación global de errores
         errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef]); // Volver a ejecutar si el memoizedDocRef cambia.
 
   return { data, isLoading, error };
 }

@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview An AI agent for generating professional profile sections for CVs.
+ * @fileOverview Un agente de IA para generar secciones de perfil profesional para CVs.
  *
- * - generateProfessionalProfile - A function that generates a professional profile section.
- * - GenerateProfessionalProfileInput - The input type for the generateProfessionalProfile function.
- * - GenerateProfessionalProfileOutput - The return type for the generateProfessionalProfile function.
+ * - generateProfessionalProfile - Una función que genera una sección de perfil profesional.
+ * - GenerateProfessionalProfileInput - El tipo de entrada para la función generateProfessionalProfile.
+ * - GenerateProfessionalProfileOutput - El tipo de retorno para la función generateProfessionalProfile.
  */
 
 import {ai} from '@/ai/genkit';
@@ -14,14 +14,14 @@ import {z} from 'genkit';
 const GenerateProfessionalProfileInputSchema = z.object({
   experience: z
     .string()
-    .describe('Description of the users professional experience.'),
-  skills: z.string().describe('A list of the users skills.'),
-  desiredJob: z.string().describe('The type of job the user is applying for.'),
+    .describe('Descripción de la experiencia profesional del usuario.'),
+  skills: z.string().describe('Una lista de las habilidades del usuario.'),
+  desiredJob: z.string().describe('El tipo de trabajo que el usuario está solicitando.'),
 });
 export type GenerateProfessionalProfileInput = z.infer<typeof GenerateProfessionalProfileInputSchema>;
 
 const GenerateProfessionalProfileOutputSchema = z.object({
-  profile: z.string().describe('A professional profile section for a CV.'),
+  profile: z.string().describe('Una sección de perfil profesional para un CV.'),
 });
 export type GenerateProfessionalProfileOutput = z.infer<typeof GenerateProfessionalProfileOutputSchema>;
 
@@ -35,13 +35,13 @@ const prompt = ai.definePrompt({
   name: 'generateProfessionalProfilePrompt',
   input: {schema: GenerateProfessionalProfileInputSchema},
   output: {schema: GenerateProfessionalProfileOutputSchema},
-  prompt: `You are a professional CV writer. Use the users experience, skills, and desired job to write a professional profile section for their CV.
+  prompt: `Eres un redactor profesional de CVs. Usa la experiencia, habilidades y el trabajo deseado del usuario para escribir una sección de perfil profesional para su CV.
 
-Experience: {{{experience}}}
-Skills: {{{skills}}}
-Desired job: {{{desiredJob}}}
+Experiencia: {{{experience}}}
+Habilidades: {{{skills}}}
+Trabajo deseado: {{{desiredJob}}}
 
-Profile:`,
+Perfil:`,
 });
 
 const generateProfessionalProfileFlow = ai.defineFlow(

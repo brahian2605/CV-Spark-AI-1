@@ -1,105 +1,105 @@
 /**
- * This ruleset enforces a strict user-ownership model for the CV Spark AI application.
- * All user-generated content, including profiles and CVs, is secured to ensure
- * that only the authenticated owner of the data can access or modify it.
+ * Este conjunto de reglas impone un modelo estricto de propiedad del usuario para la aplicación CV Spark AI.
+ * Todo el contenido generado por el usuario, incluidos los perfiles y los CV, está protegido para garantizar
+ * que solo el propietario autenticado de los datos pueda acceder a ellos o modificarlos.
  *
- * Core Philosophy:
- * The security model is built on the principle of least privilege. By default, all
- * access is denied. Rules explicitly grant permissions only to the authenticated
- * owner of a specific data resource.
+ * Filosofía Principal:
+ * El modelo de seguridad se basa en el principio de privilegio mínimo. Por defecto, todo
+ * el acceso está denegado. Las reglas otorgan explícitamente permisos solo al propietario
+ * autenticado de un recurso de datos específico.
  *
- * Data Structure:
- * The data is organized hierarchically to simplify security. Each user's data is
- * stored under a unique path:
- * - /users/{userId}: Stores the user's public profile.
- * - /users/{userId}/cvs/{cvId}: A subcollection containing all CVs created by that user.
- * This path-based ownership makes rules simple, performant, and easy to audit.
+ * Estructura de Datos:
+ * Los datos se organizan jerárquicamente para simplificar la seguridad. Los datos de cada usuario se
+ * almacenan en una ruta única:
+ * - /users/{userId}: Almacena el perfil público del usuario.
+ * - /users/{userId}/cvs/{cvId}: Una subcolección que contiene todos los CV creados por ese usuario.
+ * Esta propiedad basada en la ruta hace que las reglas sean simples, eficientes y fáciles de auditar.
  *
- * Key Security Decisions:
- * - User Listing Disabled: It is not possible to list all users in the `/users` collection.
- *   This is a critical privacy feature to prevent scraping of user data.
- * - Strict Ownership: All operations (read, write, delete) on a user's data tree
- *   (their profile and their CVs) are restricted to the user whose UID matches the
- *   `{userId}` in the path.
- * - Relational Integrity: On document creation, the rules validate that the owner ID
- *   field within the document's data (e.g., `User.uid`, `Cv.userId`) matches the
- *   `{userId}` from the path. This field is enforced as immutable on updates to
- *   prevent documents from being "re-assigned" to another user.
+ * Decisiones Clave de Seguridad:
+ * - Listado de Usuarios Deshabilitado: No es posible listar todos los usuarios en la colección `/users`.
+ *   Esta es una característica de privacidad crítica para evitar el raspado de datos de usuarios.
+ * - Propiedad Estricta: Todas las operaciones (lectura, escritura, eliminación) en el árbol de datos de un usuario
+ *   (su perfil y sus CV) están restringidas al usuario cuyo UID coincide con el
+ *   `{userId}` en la ruta.
+ * - Integridad Relacional: En la creación de documentos, las reglas validan que el campo de ID del propietario
+ *   dentro de los datos del documento (p. ej., `User.uid`, `Cv.userId`) coincida con el
+ *   `{userId}` de la ruta. Este campo se aplica como inmutable en las actualizaciones para
+ *   evitar que los documentos sean "reasignados" a otro usuario.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to promote readable, reusable, and maintainable rules.
+    // Funciones de ayuda para promover reglas legibles, reutilizables y mantenibles.
 
     /**
-     * Checks if the current request is from an authenticated user.
+     * Comprueba si la solicitud actual proviene de un usuario autenticado.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * Checks if the currently signed-in user's UID matches the provided userId.
-     * This is the primary function for establishing document ownership.
+     * Comprueba si el UID del usuario actualmente conectado coincide con el userId proporcionado.
+     * Esta es la función principal para establecer la propiedad del documento.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * Checks for ownership on an existing document. Used for update and delete
-     * operations to prevent acting on documents that don't exist.
+     * Comprueba la propiedad en un documento existente. Se utiliza para operaciones de actualización y eliminación
+     * para evitar actuar sobre documentos que no existen.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description   Secures a user's profile document.
+     * @description   Asegura el documento de perfil de un usuario.
      * @path          /users/{userId}
-     * @allow         (create) An authenticated user can create their own profile document.
-     * @allow         (get, update, delete) The owner of the profile can read, update, or delete it.
-     * @deny          (list) Listing all user profiles is strictly forbidden for privacy.
-     * @deny          (get) An authenticated user trying to read another user's profile.
-     * @principle     Restricts access to a user's own data tree and enforces self-creation.
+     * @allow         (create) Un usuario autenticado puede crear su propio documento de perfil.
+     * @allow         (get, update, delete) El propietario del perfil puede leerlo, actualizarlo o eliminarlo.
+     * @deny          (list) Está estrictamente prohibido listar todos los perfiles de usuario por privacidad.
+     * @deny          (get) Un usuario autenticado que intenta leer el perfil de otro usuario.
+     * @principle     Restringe el acceso al árbol de datos de un usuario y aplica la autocreación.
      */
     match /users/{userId} {
-      // READ: Only the document owner can read their own profile.
+      // LECTURA: Solo el propietario del documento puede leer su propio perfil.
       allow get: if isOwner(userId);
-      // READ: Listing all users is explicitly forbidden to protect user privacy.
+      // LECTURA: Se prohíbe explícitamente listar a todos los usuarios para proteger la privacidad del usuario.
       allow list: if false;
 
-      // WRITE: A user can create their own profile document.
-      // Validation ensures the document's internal `uid` matches the path `userId`.
+      // ESCRITURA: Un usuario puede crear su propio documento de perfil.
+      // La validación asegura que el `uid` interno del documento coincida con el `userId` de la ruta.
       allow create: if isOwner(userId) && request.resource.data.uid == userId;
-      // WRITE: The owner can update their profile.
-      // Validation ensures the `uid` field cannot be changed after creation.
+      // ESCRITURA: El propietario puede actualizar su perfil.
+      // La validación asegura que el campo `uid` no se pueda cambiar después de la creación.
       allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
-      // WRITE: The owner can delete their profile.
+      // ESCRITURA: El propietario puede eliminar su perfil.
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description   Secures a user's collection of CVs.
+     * @description   Asegura la colección de CVs de un usuario.
      * @path          /users/{userId}/cvs/{cvId}
-     * @allow         (create) An authenticated user can create a new CV under their own profile.
-     * @allow         (get, list, update, delete) The owner can read, list, update, and delete their own CVs.
-     * @deny          (get) An authenticated user trying to access a CV owned by another user.
-     * @principle     Enforces document ownership for all operations within a user-specific subcollection.
+     * @allow         (create) Un usuario autenticado puede crear un nuevo CV bajo su propio perfil.
+     * @allow         (get, list, update, delete) El propietario puede leer, listar, actualizar y eliminar sus propios CVs.
+     * @deny          (get) Un usuario autenticado que intenta acceder a un CV propiedad de otro usuario.
+     * @principle     Aplica la propiedad del documento para todas las operaciones dentro de una subcolección específica del usuario.
      */
     match /users/{userId}/cvs/{cvId} {
-      // READ: The owner can read and list all of their own CVs.
+      // LECTURA: El propietario puede leer y listar todos sus propios CVs.
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
 
-      // WRITE: The owner can create a new CV.
-      // Validation ensures the new CV document is correctly linked to the owner.
+      // ESCRITURA: El propietario puede crear un nuevo CV.
+      // La validación asegura que el nuevo documento de CV esté correctamente vinculado al propietario.
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      // WRITE: The owner can update an existing CV.
-      // Validation ensures the ownership link (`userId`) cannot be changed.
+      // ESCRITURA: El propietario puede actualizar un CV existente.
+      // La validación asegura que el enlace de propiedad (`userId`) no se pueda cambiar.
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      // WRITE: The owner can delete their own CV.
+      // ESCRITURA: El propietario puede eliminar su propio CV.
       allow delete: if isExistingOwner(userId);
     }
   }

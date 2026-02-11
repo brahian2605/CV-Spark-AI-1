@@ -9,12 +9,12 @@ import {
   updateProfile
 } from 'firebase/auth';
 
-/** Initiate anonymous sign-in (non-blocking). */
+/** Iniciar sesión anónima (sin bloqueo). */
 export function initiateAnonymousSignIn(authInstance: Auth) {
   return signInAnonymously(authInstance);
 }
 
-/** Initiate email/password sign-up (non-blocking). */
+/** Iniciar registro con correo/contraseña (sin bloqueo). */
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, name: string) {
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((userCredential) => {
@@ -26,12 +26,12 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
     });
 }
 
-/** Initiate email/password sign-in (non-blocking). */
+/** Iniciar sesión con correo/contraseña (sin bloqueo). */
 export function initiateEmailSignIn(authInstance: Auth, email: string, password: string) {
   return signInWithEmailAndPassword(authInstance, email, password);
 }
 
-/** Initiate Google sign-in (non-blocking). */
+/** Iniciar sesión con Google (sin bloqueo). */
 export function initiateGoogleSignIn(authInstance: Auth) {
   const provider = new GoogleAuthProvider();
   return signInWithPopup(authInstance, provider);

@@ -5,35 +5,35 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * An invisible component that listens for globally emitted 'permission-error' events.
- * It throws any received error to be caught by Next.js's global-error.tsx.
+ * Un componente invisible que escucha los eventos 'permission-error' emitidos globalmente.
+ * Lanza cualquier error recibido para que sea capturado por el global-error.tsx de Next.js.
  */
 export function FirebaseErrorListener() {
-  // Use the specific error type for the state for type safety.
+  // Usar el tipo de error específico para el estado por seguridad de tipos.
   const [error, setError] = useState<FirestorePermissionError | null>(null);
 
   useEffect(() => {
-    // The callback now expects a strongly-typed error, matching the event payload.
+    // El callback ahora espera un error fuertemente tipado, que coincida con la carga útil del evento.
     const handleError = (error: FirestorePermissionError) => {
-      // Set error in state to trigger a re-render.
+      // Establecer el error en el estado para activar una nueva renderización.
       setError(error);
     };
 
-    // The typed emitter will enforce that the callback for 'permission-error'
-    // matches the expected payload type (FirestorePermissionError).
+    // El emisor tipado se asegurará de que el callback para 'permission-error'
+    // coincida con el tipo de carga útil esperado (FirestorePermissionError).
     errorEmitter.on('permission-error', handleError);
 
-    // Unsubscribe on unmount to prevent memory leaks.
+    // Darse de baja al desmontar para evitar fugas de memoria.
     return () => {
       errorEmitter.off('permission-error', handleError);
     };
   }, []);
 
-  // On re-render, if an error exists in state, throw it.
+  // Al volver a renderizar, si existe un error en el estado, lanzarlo.
   if (error) {
     throw error;
   }
 
-  // This component renders nothing.
+  // Este componente no renderiza nada.
   return null;
 }
